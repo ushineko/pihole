@@ -2,6 +2,22 @@
 
 This project provides a Docker-based setup for [Pi-hole](https://pi-hole.net/), a network-wide ad blocker that can be used as a DNS server.
 
+## Table of Contents
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Quick Start](#quick-start)
+- [Auto-start Configuration](#auto-start-configuration)
+  - [NixOS](#nixos)
+  - [Ubuntu/Debian](#ubuntudebian)
+- [Configuration](#configuration)
+  - [DNS Settings](#dns-settings)
+  - [Custom Configuration](#custom-configuration)
+- [Testing](#testing)
+- [Management Commands](#management-commands)
+- [Directory Structure](#directory-structure)
+- [Security Notes](#security-notes)
+- [License](#license)
+
 ## Features
 
 - Network-wide ad blocking
