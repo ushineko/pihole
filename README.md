@@ -140,8 +140,7 @@ docker compose restart pihole
 
 - `etc-pihole/`: Persistent storage for Pi-hole configuration
 - `etc-dnsmasq.d/`: Custom dnsmasq configuration
-- `docker-compose.yml`: Container configuration
-- `Dockerfile`: Image build configuration
+- `docker-compose.yml`: Container configuration using the official Pi-hole image
 
 ## Security Notes
 
