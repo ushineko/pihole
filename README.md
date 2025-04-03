@@ -1,6 +1,6 @@
 # Pi-hole Docker Setup
 
-This project provides a Docker-based setup for Pi-hole, a network-wide ad blocker that can be used as a DNS server.
+This project provides a Docker-based setup for [Pi-hole](https://pi-hole.net/), a network-wide ad blocker that can be used as a DNS server.
 
 ## Features
 
@@ -26,12 +26,37 @@ git clone <your-repo-url>
 cd pihole
 ```
 
-2. Start Pi-hole:
+2. Create the necessary configuration directories:
+```bash
+mkdir -p etc-pihole etc-dnsmasq.d
+```
+
+3. Create the dnsmasq configuration file:
+```bash
+cat > etc-dnsmasq.d/02-custom.conf << 'EOL'
+# Allow all origins
+all-servers
+domain-needed
+bogus-priv
+no-resolv
+no-poll
+expand-hosts
+cache-size=10000
+domain=local
+local=/
+listen-address=0.0.0.0
+bind-interfaces
+rebind-localhost-ok
+rebind-domain-ok=local
+EOL
+```
+
+4. Start Pi-hole:
 ```bash
 docker compose up -d
 ```
 
-3. Access the web interface:
+5. Access the web interface:
 - URL: `http://localhost:18080/admin`
 - Username: `admin`
 - Password: `admin`
