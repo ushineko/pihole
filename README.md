@@ -61,7 +61,9 @@ docker compose up -d
 - Username: `admin`
 - Password: `admin`
 
-## NixOS Auto-start Configuration
+## Auto-start Configuration
+
+### NixOS
 
 To make Pi-hole start automatically on boot in NixOS, add the following to your `configuration.nix`:
 
@@ -95,6 +97,46 @@ sudo nixos-rebuild switch
 2. Verify the service is enabled:
 ```bash
 systemctl status pihole
+```
+
+### Ubuntu/Debian
+
+To make Pi-hole start automatically on boot in Ubuntu/Debian:
+
+1. Create a systemd service file:
+```bash
+sudo nano /etc/systemd/system/pihole.service
+```
+
+2. Add the following content (replace the path with your actual Pi-hole directory):
+```ini
+[Unit]
+Description=Pi-hole Docker Container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/path/to/your/pihole/directory
+ExecStart=/usr/bin/docker compose up -d
+ExecStop=/usr/bin/docker compose down
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
+```
+
+3. Enable and start the service:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable pihole
+sudo systemctl start pihole
+```
+
+4. Verify the service is running:
+```bash
+sudo systemctl status pihole
 ```
 
 ## Configuration
