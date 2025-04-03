@@ -1,0 +1,45 @@
+# Docker volumes
+etc-pihole/
+etc-dnsmasq.d/
+
+# Docker related
+.docker/
+docker-compose.override.yml
+
+# Environment variables
+.env
+.env.*
+
+# Logs
+*.log
+logs/
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Build artifacts
+*.tar
+*.gz
+*.zip
+
+# Local development
+*.local
+local/ 
