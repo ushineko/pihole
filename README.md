@@ -9,6 +9,7 @@ This project provides a Docker-based setup for [Pi-hole](https://pi-hole.net/), 
 - [Auto-start Configuration](#auto-start-configuration)
   - [NixOS](#nixos)
   - [Ubuntu/Debian](#ubuntudebian)
+- [Makefile Usage](#makefile-usage)
 - [Configuration](#configuration)
   - [DNS Settings](#dns-settings)
   - [Custom Configuration](#custom-configuration)
@@ -76,6 +77,37 @@ docker compose up -d
 - URL: `http://localhost:18080/admin`
 - Username: `admin`
 - Password: `admin`
+
+## Makefile Usage
+
+The project includes a Makefile for easy container management. To see all available commands:
+
+```bash
+make help
+```
+
+Common commands:
+
+```bash
+make start    # Start Pi-hole
+make stop     # Stop Pi-hole
+make update   # Update to latest version and restart
+make status   # Check container status
+make logs     # View container logs
+make shell    # Access container shell
+```
+
+The Makefile provides the following targets:
+
+- **Main Commands**
+  - `start`: Start the Pi-hole container
+  - `stop`: Stop the Pi-hole container
+  - `update`: Update and restart the Pi-hole container
+
+- **Info Commands**
+  - `status`: Show Pi-hole container status
+  - `logs`: Show Pi-hole container logs
+  - `shell`: Access Pi-hole container shell
 
 ## Auto-start Configuration
 
