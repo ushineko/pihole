@@ -52,4 +52,19 @@ logs: ##@info Show Pi-hole container logs
 
 # Access container shell
 shell: ##@info Access Pi-hole container shell
-	docker compose exec pihole bash 
+
+# Test DNS resolution and blocking
+test: ##@info Test DNS functionality and ad blocking
+	@echo "Checking Pi-hole status..."
+	@docker compose ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}"
+	@echo "\nTesting external resolution (google.com)..."
+	@dig +short @192.168.86.32 google.com | grep -E '^[0-9.]+' > /dev/null && echo "✅ Resolution OK" || (echo "❌ Resolution FAILED"; exit 1)
+	@echo "\nTesting ad blocking (doubleclick.net)..."
+	@res=$$(dig +short @192.168.86.32 doubleclick.net); \
+	if [ "$$res" = "0.0.0.0" ] || [ "$$res" = "0.0.0.0" ]; then \
+		echo "✅ Blocking OK (Returned $$res)"; \
+	else \
+		echo "❌ Blocking FAILED (Returned $$res)"; \
+		exit 1; \
+	fi
+ 

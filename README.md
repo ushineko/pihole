@@ -95,6 +95,7 @@ make update   # Update to latest version and restart
 make status   # Check container status
 make logs     # View container logs
 make shell    # Access container shell
+make test     # Verify DNS resolution and ad blocking
 ```
 
 The Makefile provides the following targets:
@@ -108,6 +109,7 @@ The Makefile provides the following targets:
   - `status`: Show Pi-hole container status
   - `logs`: Show Pi-hole container logs
   - `shell`: Access Pi-hole container shell
+  - `test`: Verify DNS resolution and ad blocking functionality
 
 ## Auto-start Configuration
 
