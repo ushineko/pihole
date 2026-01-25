@@ -21,6 +21,8 @@ services:
       QUERY_LOGGING: 'true'
       CONDITIONAL_FORWARDING: 'false'
       WEBPASSWORD: 'admin'
+      DNSMASQ_LISTENING: 'all'
+      FTLCONF_dns_listeningMode: 'all'
       # Allow queries from all networks
       ALLOW_LOCAL: 'true'
       ALLOW_NONLOCAL: 'true'

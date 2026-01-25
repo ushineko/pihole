@@ -193,6 +193,7 @@ sudo systemctl status pihole
 - Default upstream DNS: 8.8.8.8 (Google DNS)
 - Web interface port: 18080
 - DNS port: 53 (TCP/UDP)
+- Listening Mode: Permit all origins (Required for external access, set via `FTLCONF_dns_listeningMode='all'`)
 
 ### Host DNS Configuration (CachyOS/systemd-resolved)
 
