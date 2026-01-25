@@ -29,7 +29,7 @@ services:
     volumes:
       - './etc-pihole:/etc/pihole'
       - './etc-dnsmasq.d:/etc/dnsmasq.d'
-      - './start.sh:/start.sh'
+
     cap_add:
       - NET_ADMIN
     restart: unless-stopped
@@ -37,8 +37,7 @@ services:
       - pihole_network
     dns:
       - 8.8.8.8
-    command: sh -c "chmod +x /start.sh && /start.sh & sleep 5 && pihole -a -p admin && pihole-FT"
 
 networks:
   pihole_network:
-    driver: bridge 
+    driver: bridge

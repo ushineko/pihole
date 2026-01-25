@@ -76,7 +76,7 @@ docker compose up -d
 5. Access the web interface:
 - URL: `http://localhost:18080/admin`
 - Username: `admin`
-- Password: `admin`
+- Password: `admin` (Default, set in `docker-compose.yml`)
 
 ## Makefile Usage
 
