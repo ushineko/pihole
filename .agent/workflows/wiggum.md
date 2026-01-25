@@ -33,6 +33,6 @@ description: Iteratively run, capture logs, and debug the Pi-hole container unti
     *   **Cleanup**:
         *   If the goal was just to test, you might want to `make stop`.
         *   If the goal was to deploy, leave it running.
-    *   **Update Documentation**:
+    *   **Update Documentation** (Reference: `/update_documentation`):
         *   If you changed configuration parameters, update `README.md`.
     *   **Notify User**: Confirm success.
