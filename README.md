@@ -194,6 +194,38 @@ sudo systemctl status pihole
 - Web interface port: 18080
 - DNS port: 53 (TCP/UDP)
 
+### Host DNS Configuration (CachyOS/systemd-resolved)
+
+**Port 53 Conflict Resolution**: By default, `systemd-resolved` listens on port 53 (specifically `127.0.0.53:53`), which prevents the Pi-hole container from binding to host port 53. To allow Pi-hole to run, we must disable this stub listener.
+
+To configure your local system (running systemd-resolved, e.g., CachyOS/Arch/Ubuntu) to use this Pi-hole container for DNS, follow these steps:
+
+1.  **Edit `/etc/systemd/resolved.conf`**:
+    Open the configuration file with a text editor (`sudo vim /etc/systemd/resolved.conf`) and set the following parameters under the `[Resolve]` section:
+
+    ```ini
+    [Resolve]
+    # Set Pi-hole (localhost) as primary, Google (8.8.8.8) as fallback
+    DNS=127.0.0.1 8.8.8.8
+    # Force systemd-resolved to prioritize global DNS settings
+    Domains=~.
+    # Disable the stub listener to free up port 53 for Pi-hole
+    DNSStubListener=no
+    ```
+
+2.  **Restart systemd-resolved**:
+    ```bash
+    sudo systemctl restart systemd-resolved
+    ```
+
+3.  **Ensure Symlink Correctness**:
+    Make sure `/etc/resolv.conf` is using the uplink mode (handled by `systemd-resolved`):
+    ```bash
+    sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+    ```
+
+    *Why?* This ensures that host applications use the DNS servers configured in `systemd-resolved` rather than just the local stub resolver (which we disabled).
+
 ### Custom Configuration
 The setup includes custom dnsmasq configuration to allow queries from all networks. This can be modified in `etc-dnsmasq.d/02-custom.conf`.
 
