@@ -96,6 +96,7 @@ make status   # Check container status
 make logs     # View container logs
 make shell    # Access container shell
 make test     # Verify DNS resolution and ad blocking
+make flush    # Clear dashboard history (flush logs)
 ```
 
 The Makefile provides the following targets:
@@ -110,6 +111,7 @@ The Makefile provides the following targets:
   - `logs`: Show Pi-hole container logs
   - `shell`: Access Pi-hole container shell
   - `test`: Verify DNS resolution and ad blocking functionality
+  - `flush`: Flush Pi-hole logs and clear dashboard history
 
 ## Auto-start Configuration
 
@@ -191,15 +193,29 @@ sudo systemctl status pihole
 
 ## Configuration
 
-### DNS Settings
-- Default upstream DNS: 8.8.8.8 (Google DNS)
-- Web interface port: 18080
-- DNS port: 53 (TCP/UDP)
-- Listening Mode: Permit all origins (Required for external access, set via `FTLCONF_dns_listeningMode='all'`)
+### Core Settings (Pi-hole v6)
+Pi-hole v6 uses `FTLCONF_` prefixed environment variables in `docker-compose.yml`. These are driven by the `.env` file for portability.
+
+1.  **Configure Environment**:
+    Copy `.env.example` to `.env` and update the IP addresses:
+    ```bash
+    cp .env.example .env
+    # Edit .env with your local ROUTER_IP and PIHOLE_HOST_IP
+    ```
+
+2.  **Run Setup**:
+    ```bash
+    make setup
+    ```
+
+- **Upstream DNS**: `FTLCONF_dns_upstreams: [ "8.8.8.8", "8.8.4.4" ]` (set in `pihole.toml`)
+- **Admin Password**: set via `ADMIN_PASSWORD` in `.env`.
+- **Listening Mode**: `FTLCONF_dns_listeningMode: 'all'`
+- **Web UI**: `http://<PIHOLE_HOST_IP>:18080/admin`
 
 ### Host DNS Configuration (CachyOS/systemd-resolved)
 
-**Port 53 Conflict Resolution**: By default, `systemd-resolved` listens on port 53 (specifically `127.0.0.53:53`), which prevents the Pi-hole container from binding to host port 53. To allow Pi-hole to run, we must disable this stub listener.
+**Port 53 Conflict Resolution**: By default, `systemd-resolved` listens on port 53, preventing the Pi-hole container from starting.
 
 To configure your local system (running systemd-resolved, e.g., CachyOS/Arch/Ubuntu) to use this Pi-hole container for DNS, follow these steps:
 
@@ -271,6 +287,14 @@ docker compose exec pihole pihole -a -p <new_password>
 - `etc-pihole/`: Persistent storage for Pi-hole configuration
 - `etc-dnsmasq.d/`: Custom dnsmasq configuration
 - `docker-compose.yml`: Container configuration using the official Pi-hole image
+
+### Verification Tools
+- `make status`: Quick check of container health.
+- `make test`: Automated end-to-end check of DNS and Web UI.
+- `make flush`: Clears long-term query database and logs (useful for fresh testing).
+
+### Troubleshooting Workflow (/wiggum)
+The project includes a predefined workflow in `.agent/workflows/wiggum.md` for iterative debugging. It follows a "Clean Slate -> Run -> Analyze -> Fix" loop, now incorporating `make flush` to ensure fresh data after configuration changes.
 
 ## Security Notes
 

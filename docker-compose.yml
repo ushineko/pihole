@@ -7,27 +7,20 @@ services:
       - "53:53/udp"
       - "18080:80/tcp"
     environment:
-      TZ: 'UTC'
+      # Pi-hole v6 FTL Configuration
+      FTLCONF_dns_listeningMode: 'all'
+      FTLCONF_dns_bogusPriv: 'false'
+      FTLCONF_dns_domainNeeded: 'true'
+      FTLCONF_webserver_api_password: '${ADMIN_PASSWORD:-admin}'
+      FTLCONF_misc_etc_dnsmasq_d: 'true'
+      FTLCONF_webserver_interface_theme: 'default-light'
+      FTLCONF_dns_queryLogging: 'true'
+
+      # Persistence helper for legacy lookups if needed
       DNS1: '8.8.8.8'
+      TZ: 'UTC'
       VIRTUAL_HOST: 'pihole'
       ServerIP: '0.0.0.0'
-      REV_SERVER: 'false'
-      REV_SERVER_DOMAIN: ''
-      REV_SERVER_TARGET: ''
-      REV_SERVER_CIDR: ''
-      DNSSEC: 'true'
-      DNS_BOGUS_PRIV: 'false'
-      WEBTHEME: 'default-light'
-      QUERY_LOGGING: 'true'
-      CONDITIONAL_FORWARDING: 'false'
-      WEBPASSWORD: 'admin'
-      DNSMASQ_LISTENING: 'all'
-      FTLCONF_dns_listeningMode: 'all'
-      # Allow queries from all networks
-      ALLOW_LOCAL: 'true'
-      ALLOW_NONLOCAL: 'true'
-      ALLOW_PRIVATE: 'true'
-      ALLOW_NONPRIVATE: 'true'
     volumes:
       - './etc-pihole:/etc/pihole'
       - './etc-dnsmasq.d:/etc/dnsmasq.d'

@@ -24,8 +24,13 @@ HELP_FUN = \
 help: ##@misc Show this help message
 	@perl -e '$(HELP_FUN)' $(MAKEFILE_LIST)
 
+# Run the setup script for first-time configuration
+setup: ##@main Run the setup script to initialize configurations
+	@echo "Running setup script..."
+	@./scripts/setup.sh
+
 # Start the container
-start: ##@main Start the Pi-hole container
+start: setup ##@main Start the Pi-hole container
 	@echo "Starting Pi-hole..."
 	docker compose up -d
 
@@ -57,14 +62,21 @@ shell: ##@info Access Pi-hole container shell
 test: ##@info Test DNS functionality and ad blocking
 	@echo "Checking Pi-hole status..."
 	@docker compose ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}"
-	@echo "\nTesting external resolution (google.com)..."
-	@dig +short @192.168.86.32 google.com | grep -E '^[0-9.]+' > /dev/null && echo "✅ Resolution OK" || (echo "❌ Resolution FAILED"; exit 1)
-	@echo "\nTesting ad blocking (doubleclick.net)..."
-	@res=$$(dig +short @192.168.86.32 doubleclick.net); \
-	if [ "$$res" = "0.0.0.0" ] || [ "$$res" = "0.0.0.0" ]; then \
+	@if [ -f .env ]; then export $$(grep -v '^#' .env | xargs); fi; \
+	PI_IP=$${PIHOLE_HOST_IP:-127.0.0.1}; \
+	echo "\nTesting external resolution (google.com) on $$PI_IP..."; \
+	dig +short @$$PI_IP google.com | grep -E '^[0-9.]+' > /dev/null && echo "✅ Resolution OK" || (echo "❌ Resolution FAILED"; exit 1); \
+	echo "\nTesting ad blocking (doubleclick.net)..."; \
+	res=$$(dig +short @$$PI_IP doubleclick.net); \
+	if [ "$$res" = "0.0.0.0" ]; then \
 		echo "✅ Blocking OK (Returned $$res)"; \
 	else \
 		echo "❌ Blocking FAILED (Returned $$res)"; \
 		exit 1; \
 	fi
+
+# Flush Pi-hole logs (Clear history)
+flush: ##@main Flush Pi-hole logs and clear dashboard history
+	@docker compose exec pihole sh -c "pihole -f 2> /dev/null"
+	@docker compose restart pihole
  
