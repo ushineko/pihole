@@ -258,6 +258,11 @@ docker compose exec pihole bash
 docker compose restart pihole
 ```
 
+- Reset Web Interface Password:
+```bash
+docker compose exec pihole pihole -a -p <new_password>
+```
+
 ## Directory Structure
 
 - `etc-pihole/`: Persistent storage for Pi-hole configuration
