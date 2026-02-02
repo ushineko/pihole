@@ -200,7 +200,9 @@ Pi-hole v6 uses `FTLCONF_` prefixed environment variables in `docker-compose.yml
     Copy `.env.example` to `.env` and update the IP addresses:
     ```bash
     cp .env.example .env
-    # Edit .env with your local ROUTER_IP and PIHOLE_HOST_IP
+    cp .env.example .env
+    # Edit .env with your local ROUTER_IP
+    # PIHOLE_HOST_IP is automatically detected and set by make setup
     ```
 
 2.  **Run Setup**:

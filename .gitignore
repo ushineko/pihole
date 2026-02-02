@@ -9,6 +9,7 @@ docker-compose.override.yml
 # Environment variables
 .env
 .env.*
+!.env.example
 
 # Logs
 *.log
