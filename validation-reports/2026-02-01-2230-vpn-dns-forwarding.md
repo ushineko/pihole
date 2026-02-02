@@ -1,6 +1,6 @@
 ## Validation Report: VPN DNS Forwarding + Setup Improvements
 **Date**: 2026-02-01 22:30
-**Commit**: (pending)
+**Commit**: e499e9f
 **Status**: PASSED
 
 ### Phase 3: Tests
