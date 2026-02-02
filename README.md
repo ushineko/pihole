@@ -6,13 +6,11 @@ This project provides a Docker-based setup for [Pi-hole](https://pi-hole.net/), 
 - [Features](#features)
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
-- [Auto-start Configuration](#auto-start-configuration)
-  - [NixOS](#nixos)
-  - [Ubuntu/Debian](#ubuntudebian)
 - [Makefile Usage](#makefile-usage)
 - [Configuration](#configuration)
-  - [DNS Settings](#dns-settings)
-  - [Custom Configuration](#custom-configuration)
+  - [Core Settings](#core-settings-pi-hole-v6)
+  - [VPN DNS Forwarding](#vpn-dns-forwarding)
+  - [Host DNS Configuration](#host-dns-configuration-cachyossystemd-resolved)
 - [Testing](#testing)
 - [Management Commands](#management-commands)
 - [Directory Structure](#directory-structure)
@@ -24,9 +22,13 @@ This project provides a Docker-based setup for [Pi-hole](https://pi-hole.net/), 
 - Network-wide ad blocking
 - DNS server functionality
 - Web interface for management
-- Custom DNS configuration
+- Custom DNS configuration via `setup.sh`
+- VPN DNS forwarding (route specific domains through VPN)
+- Reverse DNS / conditional forwarding for local hostnames
 - Persistent storage for settings
 - Accessible from any device on the network
+
+> **Note**: VPN forwarding and reverse DNS features have only been tested on CachyOS. They may work on other distributions depending on your network and VPN setup. YMMV.
 
 ## Prerequisites
 
@@ -43,40 +45,20 @@ git clone <your-repo-url>
 cd pihole
 ```
 
-2. Create the necessary configuration directories:
+2. Configure environment:
 ```bash
-mkdir -p etc-pihole etc-dnsmasq.d
+cp .env.example .env
+# Edit .env with your ROUTER_IP and optionally VPN_DNS_SERVER
 ```
 
-3. Create the dnsmasq configuration file:
+3. Run setup and start:
 ```bash
-cat > etc-dnsmasq.d/02-custom.conf << 'EOL'
-# Allow all origins
-all-servers
-domain-needed
-bogus-priv
-no-resolv
-no-poll
-expand-hosts
-cache-size=10000
-domain=local
-local=/
-listen-address=0.0.0.0
-bind-interfaces
-rebind-localhost-ok
-rebind-domain-ok=local
-EOL
+make start
 ```
 
-4. Start Pi-hole:
-```bash
-docker compose up -d
-```
-
-5. Access the web interface:
-- URL: `http://localhost:18080/admin`
-- Username: `admin`
-- Password: `admin` (Default, set in `docker-compose.yml`)
+4. Access the web interface:
+- URL: `http://<PIHOLE_HOST_IP>:18080/admin`
+- Password: `admin` (set via `ADMIN_PASSWORD` in `.env`)
 
 ## Makefile Usage
 
@@ -113,96 +95,17 @@ The Makefile provides the following targets:
   - `test`: Verify DNS resolution and ad blocking functionality
   - `flush`: Flush Pi-hole logs and clear dashboard history
 
-## Auto-start Configuration
-
-### NixOS
-
-To make Pi-hole start automatically on boot in NixOS, add the following to your `configuration.nix`:
-
-```nix
-{ config, pkgs, ... }: {
-  systemd.services.pihole = {
-    description = "Pi-hole Docker Container";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "docker.service" ];
-    requires = [ "docker.service" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      WorkingDirectory = "/path/to/your/pihole/directory";
-      ExecStart = "${pkgs.docker}/bin/docker compose up -d";
-      ExecStop = "${pkgs.docker}/bin/docker compose down";
-      TimeoutStartSec = 0;
-    };
-  };
-}
-```
-
-Replace `/path/to/your/pihole/directory` with the actual path to your Pi-hole directory.
-
-After adding this configuration:
-1. Rebuild your NixOS configuration:
-```bash
-sudo nixos-rebuild switch
-```
-
-2. Verify the service is enabled:
-```bash
-systemctl status pihole
-```
-
-### Ubuntu/Debian
-
-To make Pi-hole start automatically on boot in Ubuntu/Debian:
-
-1. Create a systemd service file:
-```bash
-sudo nano /etc/systemd/system/pihole.service
-```
-
-2. Add the following content (replace the path with your actual Pi-hole directory):
-```ini
-[Unit]
-Description=Pi-hole Docker Container
-Requires=docker.service
-After=docker.service
-
-[Service]
-Type=oneshot
-RemainAfterExit=yes
-WorkingDirectory=/path/to/your/pihole/directory
-ExecStart=/usr/bin/docker compose up -d
-ExecStop=/usr/bin/docker compose down
-TimeoutStartSec=0
-
-[Install]
-WantedBy=multi-user.target
-```
-
-3. Enable and start the service:
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable pihole
-sudo systemctl start pihole
-```
-
-4. Verify the service is running:
-```bash
-sudo systemctl status pihole
-```
-
 ## Configuration
 
 ### Core Settings (Pi-hole v6)
 Pi-hole v6 uses `FTLCONF_` prefixed environment variables in `docker-compose.yml`. These are driven by the `.env` file for portability.
 
 1.  **Configure Environment**:
-    Copy `.env.example` to `.env` and update the IP addresses:
+    Copy `.env.example` to `.env` and update for your network:
     ```bash
     cp .env.example .env
-    cp .env.example .env
     # Edit .env with your local ROUTER_IP
-    # PIHOLE_HOST_IP is automatically detected and set by make setup
+    # PIHOLE_HOST_IP is automatically detected by setup
     ```
 
 2.  **Run Setup**:
@@ -214,6 +117,26 @@ Pi-hole v6 uses `FTLCONF_` prefixed environment variables in `docker-compose.yml
 - **Admin Password**: set via `ADMIN_PASSWORD` in `.env`.
 - **Listening Mode**: `FTLCONF_dns_listeningMode: 'all'`
 - **Web UI**: `http://<PIHOLE_HOST_IP>:18080/admin`
+
+### VPN DNS Forwarding
+
+Route specific domains through your VPN's DNS server (e.g., for accessing internal resources).
+
+1. Edit `.env` and set your VPN DNS:
+   ```bash
+   VPN_DNS_SERVER=100.96.1.81
+   VPN_DOMAINS=internal.company.com,vpn.example.net
+   ```
+
+2. Re-run setup and restart:
+   ```bash
+   make setup
+   docker compose restart pihole
+   ```
+
+This generates `etc-dnsmasq.d/03-vpn-forwarding.conf` with conditional forwarding rules.
+
+**Behavior when VPN is down**: Queries to these domains will return SERVFAIL (no fallback to public DNS). This is expected for internal-only resources.
 
 ### Host DNS Configuration (CachyOS/systemd-resolved)
 
@@ -247,8 +170,10 @@ To configure your local system (running systemd-resolved, e.g., CachyOS/Arch/Ubu
 
     *Why?* This ensures that host applications use the DNS servers configured in `systemd-resolved` rather than just the local stub resolver (which we disabled).
 
-### Custom Configuration
-The setup includes custom dnsmasq configuration to allow queries from all networks. This can be modified in `etc-dnsmasq.d/02-custom.conf`.
+### Custom dnsmasq Configuration
+Additional dnsmasq settings can be added by creating files in `etc-dnsmasq.d/`. The setup script generates:
+- `02-custom.conf` - Reverse DNS / conditional forwarding for local hostnames
+- `03-vpn-forwarding.conf` - VPN domain forwarding (if configured)
 
 ## Testing
 
@@ -294,9 +219,6 @@ docker compose exec pihole pihole -a -p <new_password>
 - `make status`: Quick check of container health.
 - `make test`: Automated end-to-end check of DNS and Web UI.
 - `make flush`: Clears long-term query database and logs (useful for fresh testing).
-
-### Troubleshooting Workflow (/wiggum)
-The project includes a predefined workflow in `.agent/workflows/wiggum.md` for iterative debugging. It follows a "Clean Slate -> Run -> Analyze -> Fix" loop, now incorporating `make flush` to ensure fresh data after configuration changes.
 
 ## Security Notes
 
