@@ -1,4 +1,4 @@
-.PHONY: start stop update status logs shell help
+.PHONY: start stop update status logs shell help import-lists gravity
 
 # Default target
 .DEFAULT_GOAL := help
@@ -34,10 +34,10 @@ start: setup ##@main Start the Pi-hole container
 	@echo "Starting Pi-hole..."
 	docker compose up -d
 
-# Stop the container
+# Stop the container (preserves container so it restarts on reboot)
 stop: ##@main Stop the Pi-hole container
 	@echo "Stopping Pi-hole..."
-	docker compose down
+	docker compose stop
 
 # Update the container and restart
 update: ##@main Update and restart the Pi-hole container
@@ -74,6 +74,30 @@ test: ##@info Test DNS functionality and ad blocking
 		echo "❌ Blocking FAILED (Returned $$res)"; \
 		exit 1; \
 	fi
+
+# Import adlists from adlists.list into a running Pi-hole container
+import-lists: ##@main Import adlists from adlists.list into Pi-hole
+	@echo "Importing adlists..."
+	@while IFS= read -r url; do \
+		url=$$(echo "$$url" | sed 's/^[[:space:]]*//;s/[[:space:]]*$$//'); \
+		[ -z "$$url" ] && continue; \
+		echo "$$url" | grep -q '^#' && continue; \
+		existing=$$(docker exec pihole pihole-FTL sqlite3 /etc/pihole/gravity.db \
+			"SELECT COUNT(*) FROM adlist WHERE address='$$url';"); \
+		if [ "$$existing" = "0" ]; then \
+			docker exec pihole pihole-FTL sqlite3 /etc/pihole/gravity.db \
+				"INSERT INTO adlist (address, enabled) VALUES ('$$url', 1);"; \
+			echo "  Added: $$url"; \
+		else \
+			echo "  Already exists: $$url"; \
+		fi; \
+	done < adlists.list
+	@echo "Running gravity update..."
+	@docker exec pihole pihole -g
+
+# Update gravity (re-download blocklists)
+gravity: ##@main Re-download blocklists and rebuild gravity database
+	docker exec pihole pihole -g
 
 # Flush Pi-hole logs (Clear history)
 flush: ##@main Flush Pi-hole logs and clear dashboard history

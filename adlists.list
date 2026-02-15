@@ -1,0 +1,7 @@
+# Pi-hole adlists - imported on first setup
+# One URL per line. Lines starting with # are ignored.
+https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-social/hosts
+https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt
+https://urlhaus.abuse.ch/downloads/hostfile/
+https://big.oisd.nl/

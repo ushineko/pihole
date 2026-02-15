@@ -27,7 +27,7 @@ services:
 
     cap_add:
       - NET_ADMIN
-    restart: unless-stopped
+    restart: always
     networks:
       - pihole_network
     dns:

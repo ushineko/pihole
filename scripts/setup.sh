@@ -65,6 +65,16 @@ else
     [ -f etc-dnsmasq.d/03-vpn-forwarding.conf ] && sudo rm etc-dnsmasq.d/03-vpn-forwarding.conf
 fi
 
+echo "--- Seeding Adlists ---"
+# Copy tracked adlists.list into the Pi-hole migration directory so that
+# Pi-hole v6 picks them up on first boot. On subsequent boots the gravity
+# database already exists and this is a no-op.
+mkdir -p etc-pihole/migration_backup
+if [ -f adlists.list ]; then
+    cp adlists.list etc-pihole/migration_backup/adlists.list
+    echo "Seeded adlists from adlists.list"
+fi
+
 echo "--- Configuring Admin Credentials ---"
 # The admin password is primarily driven by FTLCONF_webserver_api_password in docker-compose.yml.
 # We ensure the directories are ready for FTL to write its persistent state.
