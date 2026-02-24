@@ -1,6 +1,7 @@
-# Docker volumes
+# Docker volumes — ignore runtime data, track config
 etc-pihole/
-etc-dnsmasq.d/
+etc-dnsmasq.d/*
+!etc-dnsmasq.d/*.conf
 
 # Docker related
 .docker/
