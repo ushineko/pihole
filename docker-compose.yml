@@ -15,6 +15,11 @@ services:
       FTLCONF_misc_etc_dnsmasq_d: 'true'
       FTLCONF_webserver_interface_theme: 'default-light'
       FTLCONF_dns_queryLogging: 'true'
+      # Rate limit raised from the 1000/60s default: all tailnet devices' DNS arrives
+      # via the tailscaled DoH proxy as a single client (the host LAN IP), sharing one
+      # bucket, so bulk DNS (e.g. a large pacman upgrade) tripped REFUSED replies.
+      FTLCONF_dns_rateLimit_count: '10000'
+      FTLCONF_dns_rateLimit_interval: '60'
       # Upstream resolvers (semicolon-separated): Google primary + Cloudflare backup
       FTLCONF_dns_upstreams: '8.8.8.8;8.8.4.4;1.1.1.1'
 
