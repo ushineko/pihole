@@ -4,9 +4,17 @@ set -e
 # Pi-hole First-Time Setup Script
 # Documented and persistent configuration for Pi-hole v6
 
-# Auto-detect external IP
-# We want the IP associated with the default route
-DETECTED_IP=$(ip route get 8.8.8.8 | grep -oP 'src \K\S+')
+# Auto-detect the LAN-facing IP.
+#
+# Deliberately routed via the LAN gateway rather than 8.8.8.8: on a host with
+# Tailscale accepting a default route, `ip route get 8.8.8.8` returns the
+# tailnet IP (100.x) and Pi-hole then binds :53 to the tailnet instead of the
+# LAN, which is invisible until a LAN client tries to resolve. ROUTER_IP is on
+# a directly attached link, so this always yields the LAN address.
+#
+# ROUTER_IP is read from .env, which is sourced below, so parse it up front.
+ROUTER_IP_EARLY=$(grep -E '^ROUTER_IP=' .env 2>/dev/null | tail -1 | cut -d= -f2)
+DETECTED_IP=$(ip route get "${ROUTER_IP_EARLY:-8.8.8.8}" | grep -oP 'src \K\S+')
 
 if [ -f .env ]; then
     # Update PIHOLE_HOST_IP in .env if it differs or doesn't exist
