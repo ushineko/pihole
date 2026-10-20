@@ -32,6 +32,11 @@ services:
       - './etc-pihole:/etc/pihole'
       - './etc-dnsmasq.d:/etc/dnsmasq.d'
 
+    # pihole-FTL keeps its in-memory query database in /dev/shm. Docker's 64MB
+    # default was exhausted by the FTL-*-queries table (2026-10-20), which made FTL
+    # stop answering DNS while the container still reported Up -- LAN-wide outage.
+    shm_size: '512mb'
+
     cap_add:
       - NET_ADMIN
     restart: always
