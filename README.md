@@ -94,6 +94,69 @@ The Makefile provides the following targets:
   - `shell`: Access Pi-hole container shell
   - `test`: Verify DNS resolution and ad blocking functionality
   - `flush`: Flush Pi-hole logs and clear dashboard history
+  - `verify-wildcards`: Check that wildcard denies kept both regex anchors
+
+- **Wildcard Commands**
+  - `import-wildcards`: Apply `wildcards.list` (idempotent; verifies afterwards)
+  - `fix-wildcards`: Repair wildcard denies that lost a regex anchor
+
+## Wildcard Denies
+
+Gravity matches **exact domains only**. A blocklist entry for `inmobi.com`
+does not cover `cmp.inmobi.com`, so ad and tracker subdomains connect while
+their parent is denied. Wildcard (regex) denies close that gap for a whole
+label.
+
+`wildcards.list` is the durable record — `etc-pihole/` is gitignored, so
+`gravity.db` does not survive a container rebuild:
+
+```bash
+make import-wildcards   # reads wildcards.list, idempotent, self-verifying
+```
+
+Apply it on **every** resolver; the wildcards are per-instance.
+
+### The anchoring trap
+
+`pihole --wild` must be given **one domain per invocation**. Passing several in
+a single argument silently stores broken fragments rather than erroring:
+
+```bash
+# WRONG - one argument, several domains
+$ pihole --wild "a.example b.example"
+    - (\.|^)a\.example      # lost its $ anchor
+    - b\.example$            # lost its (\.|^) prefix
+```
+
+`CreateDomainList()` in `/opt/pihole/list.sh` wraps the whole argument once,
+and `AddDomain()` then splits that string on spaces when building the API
+payload — so the anchoring happens before the split and each fragment loses an
+anchor. The fragments are valid regexes, so Pi-hole accepts them, but they
+match as substrings: `a\.example` blackholes `a.example.attacker.net`, and
+`b\.example$` blackholes `nota.example`. The failure direction is
+**over-blocking**.
+
+This is unchanged on Pi-hole `master` as of 2026-10-28 (identical to Core
+v6.4), so updating the image does not fix it. `make import-wildcards` loops one
+domain per call and cannot trigger it; `make verify-wildcards` runs after every
+import so that a future caller which gets it wrong is caught rather than
+silently over-blocking:
+
+```bash
+make verify-wildcards            # exits 1 and lists any unanchored entries
+make fix-wildcards               # repairs them in place and reloads FTL
+
+# Secondary resolver (separate host):
+scp scripts/check-wildcard-anchoring.sh cachyos:/tmp/ && ssh cachyos /tmp/check-wildcard-anchoring.sh
+```
+
+The check only judges entries whose body is a plain escaped domain, so
+hand-written regexes are left alone.
+
+> After editing `domainlist` directly via sqlite, `pihole reloaddns` is **not**
+> sufficient — it reloads the regex set but already-answered names keep their
+> previous verdict, making a repair look like it failed. The script uses
+> `pihole restartdns reload-lists` plus a cache flush.
 
 ## Configuration
 
