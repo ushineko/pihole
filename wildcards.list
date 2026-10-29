@@ -16,3 +16,13 @@ mparticle.com
 appsflyer.com
 appsflyersdk.com
 device.marketingcloudapis.com
+
+# Deliberately NOT wildcarded (decided 2026-10-28). Each has leaking
+# subdomains under an exact-denied parent, but the wildcard breaks real
+# function, so the leak is accepted:
+#   awstrack.me, klclick.com, klclick1.com  - SES/Klaviyo click redirectors;
+#     wildcarding dead-ends links clicked inside emails
+#   forter.com, signifyd.com                - checkout anti-fraud; can cause
+#     purchases to fail on sites that gate on them
+#   sentry.io                               - would also blackhole Sentry for
+#     our own projects
