@@ -264,18 +264,24 @@ To roll back, pin that digest in `docker-compose.yml` and `docker compose up -d`
 `./etc-pihole` is a host mount, so `gravity.db` (including wildcard denies and
 adlists) survives a recreate in either direction.
 
-| Date | From | To | Previous digest (rollback target) |
-|---|---|---|---|
-| 2026-10-28 | Core v6.4 / Web v6.4.1 / FTL v6.5 | Core v6.5 / Web v6.6.1 / FTL v6.8 | `sha256:ee348529cea9601df86ad94d62a39cad26117e1eac9e82d8876aa0ec7fe1ba27` |
+| Date | Host | From | To | Previous digest (rollback target) |
+|---|---|---|---|---|
+| 2026-10-28 | njv-cachyos (.32) | Core v6.4 / Web v6.4.1 / FTL v6.5 | Core v6.5 / Web v6.6.1 / FTL v6.8 | `sha256:ee348529cea9601df86ad94d62a39cad26117e1eac9e82d8876aa0ec7fe1ba27` |
+| 2026-10-28 | cachyos (.31) | Core v6.3 / Web v6.4 / FTL v6.4.1 | Core v6.5 / Web v6.6.1 / FTL v6.8 | `sha256:91dc91ddd413bf461c283204558f8f21839851e9824799075a7ceff7c77eea40` |
 
 ### After upgrading, run gravity once
 
-A v6.4-built `gravity.db` has the `antigravity` table (schema v21) but no
-`antigravity_count` row in `info`, which FTL v6.8 queries — it logs
+Upgrading to FTL v6.8 creates the `antigravity` table but does not seed the
+`antigravity_count` row in `info`, which FTL then queries. Reproduced on both
+resolvers, from a schema v21 source database and a v20 one, so it is not a
+one-off. FTL logs
 `gravityDB_count(... 'antigravity_count') - SQL error step no more rows
-available` every ~26s until the counter exists. `make gravity` reseeds it (and
-corrects a stale `gravity_count`). Regex denies live in `domainlist` and are
-untouched by the rebuild.
+available` until the counter exists. `make gravity` reseeds it (and corrects a
+stale `gravity_count`). Regex denies live in `domainlist` and are untouched by
+the rebuild — verified at 7 on both resolvers across the recreate and the
+database swap.
+
+Run it on **every** resolver after upgrading; each has its own `gravity.db`.
 
 ## Management Commands
 
