@@ -3,5 +3,7 @@
 https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
 https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-social/hosts
 https://cdn.jsdelivr.net/gh/hagezi/dns-blocklists@latest/adblock/pro.txt
-https://urlhaus.abuse.ch/downloads/hostfile/
+# urlhaus hostfile retired 2026-10: endpoint returns HTTP 410 Gone (so does
+# /downloads/rpz/). Disabled in gravity rather than deleted, so the adlist row
+# and its history survive; re-enable if abuse.ch publishes a working feed.
 https://big.oisd.nl/
