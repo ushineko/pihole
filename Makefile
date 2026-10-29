@@ -96,6 +96,18 @@ import-lists: ##@main Import adlists from adlists.list into Pi-hole
 	@docker exec pihole pihole -g
 
 # Update gravity (re-download blocklists)
+import-wildcards: ##@main Import wildcard denies from wildcards.list into Pi-hole
+	@echo "Importing wildcard denies..."
+	@while IFS= read -r domain; do \
+		domain=$$(echo "$$domain" | sed 's/^[[:space:]]*//;s/[[:space:]]*$$//'); \
+		[ -z "$$domain" ] && continue; \
+		echo "$$domain" | grep -q '^#' && continue; \
+		docker exec pihole pihole --wild "$$domain" >/dev/null 2>&1 && \
+			echo "  Wildcard: $$domain"; \
+	done < wildcards.list
+	@echo "Done. Verify: make shell, then pihole-FTL sqlite3 /etc/pihole/gravity.db \
+		\"select domain from domainlist where type=3;\""
+
 gravity: ##@main Re-download blocklists and rebuild gravity database
 	docker exec pihole pihole -g
 

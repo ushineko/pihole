@@ -1,0 +1,18 @@
+# Pi-hole wildcard denies - imported by `make import-wildcards`
+#
+# Gravity matches exact domains only, so a list entry for `example.com` does
+# not cover `tracker.example.com`. Every parent below was already denied by an
+# exact gravity entry while live subdomains of it resolved and connected; the
+# wildcard closes that gap for the whole label.
+#
+# One domain per line, no `*.` prefix - `pihole --wild` adds the anchoring and
+# stores it as regex `(\.|^)domain$`.
+#
+# Pure ad / attribution / telemetry: no user-visible function depends on these.
+inmobi.com
+amazon-adsystem.com
+minerva.devices.a2z.com
+mparticle.com
+appsflyer.com
+appsflyersdk.com
+device.marketingcloudapis.com
