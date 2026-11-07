@@ -1,4 +1,4 @@
-.PHONY: start stop update status logs shell help import-lists gravity
+.PHONY: start stop update status logs shell help import-lists import-allowlist gravity
 
 # Default target
 .DEFAULT_GOAL := help
@@ -106,6 +106,16 @@ import-wildcards: ##@main Import wildcard denies from wildcards.list into Pi-hol
 			echo "  Wildcard: $$domain"; \
 	done < wildcards.list
 	@$(MAKE) --no-print-directory verify-wildcards
+
+import-allowlist: ##@main Import exact allows from allowlist.list into Pi-hole
+	@echo "Importing exact allows..."
+	@while IFS= read -r domain; do \
+		domain=$$(echo "$$domain" | sed 's/^[[:space:]]*//;s/[[:space:]]*$$//'); \
+		[ -z "$$domain" ] && continue; \
+		echo "$$domain" | grep -q '^#' && continue; \
+		docker exec pihole pihole allow -q "$$domain" --comment "allowlist.list" >/dev/null 2>&1 && \
+			echo "  Allowed: $$domain" || echo "  FAILED: $$domain"; \
+	done < allowlist.list
 
 verify-wildcards: ##@info Check wildcard denies kept both regex anchors
 	@./scripts/check-wildcard-anchoring.sh

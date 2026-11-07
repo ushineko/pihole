@@ -1,0 +1,11 @@
+# Pi-hole exact allows - imported by `make import-allowlist`
+#
+# Each entry overrides a gravity (adlist) block that broke a real device. Keep
+# the reason next to every entry: an allow with no recorded cause cannot be
+# reviewed later. Exact domains only - no wildcards here.
+
+# LG ThinQ (LG fridge, 2026-11-06). Both are on StevenBlack/hosts. Wi-Fi
+# onboarding fails at ~99% with "no internet connection" while they resolve
+# to 0.0.0.0; the rest of *.lgthinq.com is not listed and resolves normally.
+aic-common.lgthinq.com
+common.iot.aic.lgthinq.com

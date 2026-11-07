@@ -96,9 +96,24 @@ The Makefile provides the following targets:
   - `flush`: Flush Pi-hole logs and clear dashboard history
   - `verify-wildcards`: Check that wildcard denies kept both regex anchors
 
+- **Allowlist Commands**
+  - `import-allowlist`: Apply `allowlist.list` exact allows (idempotent)
+
 - **Wildcard Commands**
   - `import-wildcards`: Apply `wildcards.list` (idempotent; verifies afterwards)
   - `fix-wildcards`: Repair wildcard denies that lost a regex anchor
+
+## Exact Allows
+
+`allowlist.list` records every gravity block overridden because it broke a real
+device, with the reason beside each entry. Like the wildcards, it is the
+durable record (`gravity.db` is gitignored) and must be applied on **every**
+resolver:
+
+```bash
+make import-allowlist                 # idempotent
+dig +short @<resolver-ip> <domain>    # expect a real address, not 0.0.0.0
+```
 
 ## Wildcard Denies
 
